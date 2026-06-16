@@ -1,0 +1,6 @@
+.env
+firebase-service-account.json
+google-services.json
+node_modules
+eventupload.js
+lifeG.json

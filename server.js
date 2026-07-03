@@ -21,6 +21,10 @@ app.use('/blood',bloodSearchRoute);
 //   successResponse(req, res, 'hi i am', 500);
 // });
 
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: "OK" });
+});
+
 app.listen(5000, () => {
   console.log('Server started');
 });

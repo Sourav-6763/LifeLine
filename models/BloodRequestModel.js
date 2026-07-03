@@ -1,4 +1,3 @@
-import { type } from '@react-native-firebase/app/dist/module/internal/web/firebaseFirestorePipelines';
 import mongoose from 'mongoose';
 const bloodRequestSchema = mongoose.Schema(
   {
@@ -29,6 +28,15 @@ const bloodRequestSchema = mongoose.Schema(
       type: String,
       default: 'medium',
     },
+    location: {
+      type: {
+        type: String,
+        enum: ['Point'],
+      },
+      coordinates: {
+        type: [Number],
+      },
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -36,5 +44,6 @@ const bloodRequestSchema = mongoose.Schema(
   },
   { timestamps: true },
 );
+bloodRequestSchema.index({ location: '2dsphere' }, { sparse: true });
 const BloodRequest = mongoose.model('BloodRequest', bloodRequestSchema);
 export default BloodRequest;

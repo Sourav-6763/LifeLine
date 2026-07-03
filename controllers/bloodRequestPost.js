@@ -8,7 +8,7 @@ import {
 
 export const bloodRequestPost = async (req, res) => {
   try {
-    const { bloodGroup, contact, message, place } = req.body;
+    const { bloodGroup, contact, message, place, lat, lon } = req.body;
 
     const userId = req.userIdData.data;
 
@@ -23,11 +23,15 @@ export const bloodRequestPost = async (req, res) => {
       contact,
       message,
       place,
+      location: {
+        type: 'Point',
+        coordinates: [lon, lat],
+      },
       postedBy: user._id,
     });
 
-     // ✅ Define title & body
-    const title = "Blood Needed 🩸";
+    // ✅ Define title & body
+    const title = 'Blood Needed 🩸';
     const body = `${bloodGroup} blood required at ${place}`;
 
     // ✅ Dynamic topic (BEST PRACTICE)
@@ -37,7 +41,7 @@ export const bloodRequestPost = async (req, res) => {
       notification: {
         title,
         body,
-      }, 
+      },
       data: {
         title,
         body,
@@ -58,14 +62,40 @@ export const bloodRequestPost = async (req, res) => {
 
 export const SeeAllbloodRequestPost = async (req, res) => {
   try {
+    const { lat, lon } = req.query;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const data = await BloodRequest.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    console.log('LAT:', lat, 'LON:', lon);
+    const data = await BloodRequest.aggregate([
+      {
+        $geoNear: {
+          key: 'location',
+          near: {
+            type: 'Point',
+            coordinates: [parseFloat(lon), parseFloat(lat)],
+          },
+          distanceField: 'distance',
+          spherical: true,
+          maxDistance: 5000,
+        },
+      },
+      {
+        $addFields: {
+          distanceInKM: { $divide: ['$distance', 1000] },
+        },
+      },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
+
+    console.log(data);
+    // const data = await BloodRequest.find()
+    //   .sort({ createdAt: -1 })
+    //   .skip(skip)
+    //   .limit(limit);
     const total = await BloodRequest.countDocuments();
+
     return successResponse(
       res,
       {

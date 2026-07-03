@@ -20,18 +20,16 @@ export const bloodSearchFunc = async (req, res) => {
             type: 'Point',
             coordinates: [lon, lat],
           },
+          query: {
+            isDonor: true,
+            isAvailable: true,
+            'donorInfo.bloodGroup': search,
+          },
           distanceField: 'distance',
           maxDistance: KMradious,
           spherical: true,
         },
       },
-      {
-        $match: { isDonor: true },
-      },
-      {
-        $match: { isAvailable: true },
-      },
-      { $match: { 'donorInfo.bloodGroup': search } },
       {
         $addFields: {
           distanceInKm: { $divide: ['$distance', 1000] }, // 🔥 meter → km

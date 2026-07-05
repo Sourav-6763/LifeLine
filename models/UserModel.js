@@ -1,3 +1,4 @@
+import { type } from '@react-native-firebase/app/dist/module/internal/web/firebaseFirestorePipelines';
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
@@ -38,6 +39,9 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     place: {
+      type: String,
+    },
+    fcmToken: {
       type: String,
     },
     // 🔥 donor info (nested object)

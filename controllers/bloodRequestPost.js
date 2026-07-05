@@ -77,7 +77,7 @@ export const SeeAllbloodRequestPost = async (req, res) => {
           },
           distanceField: 'distance',
           spherical: true,
-          maxDistance: 5000,
+          maxDistance: 50000,
         },
       },
       {
@@ -89,7 +89,6 @@ export const SeeAllbloodRequestPost = async (req, res) => {
       { $limit: limit },
     ]);
 
-    console.log(data);
     // const data = await BloodRequest.find()
     //   .sort({ createdAt: -1 })
     //   .skip(skip)

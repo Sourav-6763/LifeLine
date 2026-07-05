@@ -60,28 +60,39 @@ export const donorRegistration = async (req, res) => {
 };
 
 export const userInfo = async (req, res) => {
-  const { email, userId } = req.body;
-  
+  const { email, userId, fcmToken } = req.body;
   try {
     if (!email || !userId) {
       return errorResponse(res, null, 400, 'please again login');
     }
 
     const user = await User.findOne({ userId });
-    // console.log(user.userId);
-    if (user) {
-      //  const token = jsonwebTokenCoded({
-      //   data: user.userId,
-      //   days: '7d',
-      // });
 
-      // return successResponse(res, { userId: user.userId, token }, 200, 'Welcome back');
-      const token = jsonwebTokenCoded({ data: user.userId, days: '7d' });
+    if (user) {
+      // ✅ update FCM token
+      user.fcmToken = fcmToken;
+      await user.save();
+
+      const token = jsonwebTokenCoded({
+        data: user.userId,
+        days: '7d',
+      });
+
       return successResponse(res, token, 200, 'Welcome back');
     }
 
-    const newUser = await User.create({ email, userId });
-    const token = jsonwebTokenCoded({ data: newUser.userId, days: '7d' });
+    // ✅ new user
+    const newUser = await User.create({
+      email,
+      userId,
+      fcmToken,
+    });
+
+    const token = jsonwebTokenCoded({
+      data: newUser.userId,
+      days: '7d',
+    });
+
     return successResponse(res, token, 200, 'Login successful');
   } catch (error) {
     console.log(error);

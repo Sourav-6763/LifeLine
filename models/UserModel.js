@@ -1,4 +1,3 @@
-import { type } from '@react-native-firebase/app/dist/module/internal/web/firebaseFirestorePipelines';
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(

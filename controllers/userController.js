@@ -61,6 +61,7 @@ export const donorRegistration = async (req, res) => {
 
 export const userInfo = async (req, res) => {
   const { email, userId, fcmToken } = req.body;
+  // console.log("fcm",fcmToken);
   try {
     if (!email || !userId) {
       return errorResponse(res, null, 400, 'please again login');

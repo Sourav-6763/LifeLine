@@ -17,9 +17,7 @@ app.use(express.json());
 app.use('/user',userRoute);
 app.use('/blood',bloodSearchRoute);
 
-// app.get('/test', (req, res) => {
-//   successResponse(req, res, 'hi i am', 500);
-// });
+
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: "OK" });

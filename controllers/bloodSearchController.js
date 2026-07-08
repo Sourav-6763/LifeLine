@@ -1,4 +1,5 @@
 import { messaging } from '../config/fireBaseDb.js';
+import DonorRequest from '../models/DonorRequestModel.js';
 import User from '../models/UserModel.js';
 import {
   errorResponse,
@@ -46,50 +47,66 @@ export const bloodSearchFunc = async (req, res) => {
 
 export const donorRequestForBloodController = async (req, res) => {
   try {
-    const tokenUserId = req.userIdData.data;
-    const {userId}=req.body;
-    const data = await User.findOne({userId:userId}).select('fcmToken');
-    console.log("Donor token:", data.fcmToken);
-    // console.log(data);
-        // async function sendNotification(fcmToken, body, heading) {
-      // if (!body || !heading) {
-      //   console.log('❌ Skip sending empty notification');
-      //   return;
-      // }
-      // console.log("hi");
-      try {
-        await messaging.send({
-          token: data.fcmToken,
-          data: {
-            type: 'birthday',
-            title: "hi", // ✅ same
-            body:"hello",
-            id: Date.now().toString(),
-          },
-          android: {
-            priority: 'high',
-            // notification: {
-            //   priority: 'max',
-            // },
-            ttl: 1000 * 60 * 60 * 24,
-          },
-          apns: {
-            headers: {'apns-priority': '10'},
-            // payload: {
-            //   aps: {alert: {title: heading, body}, sound: 'default', badge: 1},
-            // },
-          },
-        });
-        console.log('✅ Notification sent');
-        // return true;
-      } catch (err) {
-        console.error('❌ Error sending notification', err.code || err.message);
+    const UserId = req.userIdData.data;
+    const { DonorUserId } = req.body;
+    const donorReq = await User.findOne({ userId: DonorUserId });
+    const currentuser = await User.findOne({ userId: UserId });
 
-        // return false;
-      }
+    // console.log('Donor token:', donorReq);
+    if (UserId != currentuser.userId) {
+      return errorResponse(res, null, 400, 'User Not Found');
+    }
     
+    const existingRequest = await DonorRequest.findOne({
+      senderId: currentuser._id,
+      receiverId: donorReq._id,
+      status: 'pending',
+    });
 
-    return successResponse(res, null, 200, 'Request received');
+    if (existingRequest) {
+      return errorResponse(res, null, 400, 'Request already sent');
+    }
+
+    await DonorRequest.create({
+      senderId: currentuser._id,
+      receiverId: donorReq._id,
+      status: 'pending',
+    });
+    // async function sendNotification(fcmToken, body, heading) {
+    // if (!body || !heading) {
+    //   console.log('❌ Skip sending empty notification');
+    //   return;
+    // }
+    // console.log("hi");
+    try {
+      await messaging.send({
+        token: donorReq.fcmToken,
+        data: {
+          type: 'birthday',
+          title: 'hi', // ✅ same
+          body: 'hello',
+          id: Date.now().toString(),
+        },
+        android: {
+          priority: 'high',
+          // notification: {
+          //   priority: 'max',
+          // },
+          ttl: 1000 * 60 * 60 * 24,
+        },
+        apns: {
+          headers: { 'apns-priority': '10' },
+        },
+      });
+      console.log('✅ Notification sent');
+      return successResponse(res, null, 200, 'Request sent successfully');
+      // return true;
+    } catch (err) {
+      return errorResponse(res, null, 500, 'Donor unable to take request');
+      console.error('❌ Error sending notification', err.code || err.message);
+
+      // return false;
+    }
   } catch (error) {
     console.log(error);
     return errorResponse(res, null, 500, 'Server Error');

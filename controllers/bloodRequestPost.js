@@ -157,11 +157,11 @@ export const donorAcceptRequest = async (req, res) => {
     const donorUserId = req.userIdData.data; // logged in donor
     // 🔍 Find request
     const request = await DonorRequest.findById(requestId).populate('senderId');
-    // console.log(request);
+    // console.log("test",request?.senderId?.fcmToken);
     // // ✅ update status
-    request.status = 'accepted';
-    request.acceptedBy = donorUserId;
-    await request.save();
+    // request.status = 'accepted';
+    // request.acceptedBy = donorUserId;
+    // await request.save();
     const request2 = await DonorRequest.findById(requestId).populate(
       'receiverId',
     );
@@ -169,12 +169,12 @@ export const donorAcceptRequest = async (req, res) => {
     // // 🔔 OPTIONAL: Send notification to sender
     // const sender = await User.findOne({ userId: donorUserId });
 
-    if (request2?.fcmToken) {
+    if (request?.senderId?.fcmToken) {
       const message = {
-        token: request2.fcmToken,
+        token: request?.senderId?.fcmToken,
         data: {
           title: 'Blood Request Accepted 🩸',
-          body: `${sender.fullName} has accepted your blood request.`,
+          body: `${request2?.receiverId.fullName} has accepted your blood request.`,
         },
         // data: {
         //   type: 'ACCEPT_REQUEST',

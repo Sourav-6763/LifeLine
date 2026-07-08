@@ -159,9 +159,9 @@ export const donorAcceptRequest = async (req, res) => {
     const request = await DonorRequest.findById(requestId).populate('senderId');
     // console.log("test",request?.senderId?.fcmToken);
     // // ✅ update status
-    // request.status = 'accepted';
-    // request.acceptedBy = donorUserId;
-    // await request.save();
+    request.status = 'accepted';
+    request.acceptedBy = donorUserId;
+    await request.save();
     const request2 = await DonorRequest.findById(requestId).populate(
       'receiverId',
     );

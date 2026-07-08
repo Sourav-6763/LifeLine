@@ -155,32 +155,23 @@ export const donorAcceptRequest = async (req, res) => {
   try {
     const { requestId } = req.body;
     const donorUserId = req.userIdData.data; // logged in donor
-
     // 🔍 Find request
     const request = await DonorRequest.findById(requestId).populate('senderId');
     // console.log(request);
-    // if (!request) {
-    //   return res.status(404).json({ message: 'Request not found' });
-    // }
-
-    // // ❌ already handled check
-    // if (request.status !== 'pending') {
-    //   return res.status(400).json({
-    //     message: `Request already ${request.status}`,
-    //   });
-    // }
-
     // // ✅ update status
     request.status = 'accepted';
     request.acceptedBy = donorUserId;
     await request.save();
-
+    const request2 = await DonorRequest.findById(requestId).populate(
+      'receiverId',
+    );
+    // console.log(request2);
     // // 🔔 OPTIONAL: Send notification to sender
-    const sender = await User.findOne({ userId: donorUserId });
+    // const sender = await User.findOne({ userId: donorUserId });
 
     if (sender?.fcmToken) {
       const message = {
-        token: sender.fcmToken,
+        token: request2.fcmToken,
         data: {
           title: 'Blood Request Accepted 🩸',
           body: `${sender.fullName} has accepted your blood request.`,

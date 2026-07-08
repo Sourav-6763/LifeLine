@@ -169,7 +169,7 @@ export const donorAcceptRequest = async (req, res) => {
     // // 🔔 OPTIONAL: Send notification to sender
     // const sender = await User.findOne({ userId: donorUserId });
 
-    if (sender?.fcmToken) {
+    if (request2?.fcmToken) {
       const message = {
         token: request2.fcmToken,
         data: {

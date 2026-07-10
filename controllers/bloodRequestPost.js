@@ -165,10 +165,6 @@ export const donorAcceptRequest = async (req, res) => {
     const request2 = await DonorRequest.findById(requestId).populate(
       'receiverId',
     );
-    // console.log(request2);
-    // // 🔔 OPTIONAL: Send notification to sender
-    // const sender = await User.findOne({ userId: donorUserId });
-
     if (request?.senderId?.fcmToken) {
       const message = {
         token: request?.senderId?.fcmToken,

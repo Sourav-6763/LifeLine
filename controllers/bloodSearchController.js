@@ -56,7 +56,7 @@ export const donorRequestForBloodController = async (req, res) => {
     if (UserId != currentuser.userId) {
       return errorResponse(res, null, 400, 'User Not Found');
     }
-    
+
     const existingRequest = await DonorRequest.findOne({
       senderId: currentuser._id,
       receiverId: donorReq._id,
@@ -72,19 +72,13 @@ export const donorRequestForBloodController = async (req, res) => {
       receiverId: donorReq._id,
       status: 'pending',
     });
-    // async function sendNotification(fcmToken, body, heading) {
-    // if (!body || !heading) {
-    //   console.log('❌ Skip sending empty notification');
-    //   return;
-    // }
-    // console.log("hi");
     try {
       await messaging.send({
         token: donorReq.fcmToken,
         data: {
           type: 'birthday',
-          title: 'hi', // ✅ same
-          body: 'hello',
+          title: 'Blood Request 🩸',
+          body: `${currentuser.fullName} needs your help. Please consider donating blood.`,
           id: Date.now().toString(),
         },
         android: {
@@ -110,5 +104,38 @@ export const donorRequestForBloodController = async (req, res) => {
   } catch (error) {
     console.log(error);
     return errorResponse(res, null, 500, 'Server Error');
+  }
+};
+
+// controllers/donorController.js
+
+
+export const getNearbyDonors = async (req, res) => {
+  try {
+    const { lat, lng } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({ message: 'Location required' });
+    }
+
+    const donors = await User.find({
+      isDonor: true,
+      isAvailable: true,
+      'donorInfo.location': {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [parseFloat(lng), parseFloat(lat)],
+          },
+          $maxDistance: 500000, // 🔥 500km radius
+        },
+      },
+    })
+      .limit(50);
+// console.log(donors);
+    res.json({ success: true, donors });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server Error' });
   }
 };

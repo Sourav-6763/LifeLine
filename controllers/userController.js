@@ -106,7 +106,7 @@ export const getProfile = async (req, res) => {
     if (!user) {
       return errorResponse(res, null, 404, 'User not found');
     }
-
+    console.log(user);
     return successResponse(
       res,
       {

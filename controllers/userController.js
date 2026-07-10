@@ -1,3 +1,4 @@
+import DonorRequest from '../models/DonorRequestModel.js';
 import User from '../models/UserModel.js';
 import {
   errorResponse,
@@ -103,20 +104,52 @@ export const getProfile = async (req, res) => {
   try {
     const userId = req.userIdData.data;
     const user = await User.findOne({ userId });
+    const completedDonation = await DonorRequest.countDocuments({
+      receiverId: user._id,
+      status: 'completed',
+    });
     if (!user) {
       return errorResponse(res, null, 404, 'User not found');
     }
-    console.log(user);
     return successResponse(
       res,
       {
         isUserRegistered: user.isUserRegistered,
         isDonor: user.isDonor,
+        completedDonation,
       },
       200,
       'Profile data',
     );
   } catch (error) {
     return errorResponse(res, null, 500, 'Server error');
+  }
+};
+export const updateFcmTokenHandaler = async (req, res) => {
+  try {
+    const userId = req.userIdData.data;
+    const { newToken } = req.body;
+
+    if (!newToken) {
+      return res.status(400).json({ message: 'Token missing' });
+    }
+
+    const user = await User.findOneAndUpdate(
+      { userId: userId },
+      { fcmToken: newToken },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({
+      message: 'FCM token updated',
+      token: user.fcmToken,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
